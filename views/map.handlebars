@@ -1,0 +1,115 @@
+
+<div id="map"></div>
+
+<script src="https://www.gstatic.com/firebasejs/5.4.0/firebase.js"></script>
+<script>
+    // Initialize Firebase
+    var config = {
+        apiKey: "AIzaSyAv7p_lWo3_QnJPayaos3oiPjAQGeNJlk8",
+        authDomain: "lyrical-line-213904.firebaseapp.com",
+        databaseURL: "https://lyrical-line-213904.firebaseio.com",
+        projectId: "lyrical-line-213904",
+        storageBucket: "lyrical-line-213904.appspot.com",
+        messagingSenderId: "779033580712"
+    };
+    firebase.initializeApp(config);
+
+    var eventData = {
+        sender: null,
+        eventName: null,
+        lat: null,
+        long: null
+    };
+
+    var map;
+
+    var markers = [];
+    var infoWindows = [];
+
+    var geocoder;
+
+    function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+            center: {lat: 43.653299, lng: -79.383011},
+            zoom: 8,
+            streetViewControl: false,
+            mapTypeControl: false
+
+        });
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(function(position) {
+            var pos = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            };
+
+            map.setCenter(pos);
+          });
+        } else {
+          // Browser doesn't support Geolocation
+          window.alert("We werent able to find your location");
+        }
+        geocoder = new google.maps.Geocoder;
+    }
+
+    function uploadEvent() {
+        eventData.eventName = document.getElementById("eName").value;
+        eventData.lat = document.getElementById("lat").value;
+        eventData.long = document.getElementById("long").value;
+
+        var databaseRef = firebase.database().ref();
+
+        databaseRef.child("event/" + eventData.eventName + "/lat").set(eventData.lat);
+        databaseRef.child("event/" + eventData.eventName + "/long").set(eventData.long);
+    }
+
+    // Deletes all markers in the array by removing references to them.
+    function deleteMarkers() {
+        for (var i = 0; i < markers.length; i++) {
+            markers[i].setMap(null);
+        }
+        markers = [];
+        infoWindows = [];
+    }
+
+    var eventsRef = firebase.database().ref("event");
+
+    eventsRef.on("value", function(snapshot) {
+        deleteMarkers();
+        snapshot.forEach(function(childSnapShot){
+
+            var details = childSnapShot.val();
+            var eventName = childSnapShot.key;
+            var latlng = {lat: parseFloat(details.lat), lng: parseFloat(details.long)};
+            var info = details.info;
+            var marker = new google.maps.Marker({position: latlng, map: map, title:eventName});
+
+            var address = details.addr;
+
+            console.log(address);
+
+            var infoWindow = new google.maps.InfoWindow({
+                content: '<div id="content">'+
+                    '<div id="siteNotice">'+
+                    '</div>'+
+                    '<h1 id="firstHeading">'+eventName+'</h1>'+
+                    '<h4>'+ address +'</h4>' +
+                    '<div id="bodyContent">'+
+                    '<p>'+ info +'</p>'+
+                    '</div>'+
+                    '</div>'
+            });
+            marker.addListener("click", function() {
+                infoWindow.open(map, marker);
+            });
+            markers.push(marker);
+            infoWindows.push(infoWindow);
+        });
+    }, function (errorObject) {
+        console.log("The read failed: " + errorObject.code);
+    });
+
+
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBsYQueSaRPnG3Rm1PjJHMmgCgXwZs9l8E&callback=initMap"
+        async defer></script>

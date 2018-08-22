@@ -1,0 +1,100 @@
+
+
+/* ==========================================================================
+   Author's custom styles
+   ========================================================================== */
+
+html{
+  margin:0;
+  height: 100%;
+  width: 100%;
+
+}
+body{
+  margin:0;
+  height: 100%;
+  width: 100%;
+}
+#infotxt{
+  position: absolute;
+  top: 61vh;
+  left: 37vh;
+  margin-top: -50px;
+  margin-left: -50px;
+  resize: none;
+
+}
+#info{
+  position: absolute;
+  top: 60vh;
+  left: 50vh;
+  margin-top: -50px;
+  margin-left: -50px;
+  width: 500px;
+  height: 55px;
+}
+#logo{
+  width:124px;
+  top: 0vh;
+  position: absolute;
+  right: 45%;
+}
+#but{
+  position: absolute;
+  top: 70vh;
+  left: 50vh;
+  margin-top: -50px;
+  margin-left: -50px;
+
+}
+#addtxt{
+  position: absolute;
+  top: 56vh;
+  left: 40.5vh;
+  margin-top: -50px;
+  margin-left: -50px;
+}
+#eNametxt{
+  position: absolute;
+  top: 51vh;
+  left: 36.2vh;
+  margin-top: -50px;
+  margin-left: -50px;
+}
+
+#add{
+  position: absolute;
+  top: 55vh;
+  left: 50vh;
+  margin-top: -50px;
+  margin-left: -50px;
+  width: 500px;
+  height: 25px;
+}
+#eName{
+  position: absolute;
+  top: 50vh;
+  left: 50vh;
+  margin-top: -50px;
+  margin-left: -50px;
+  width: 500px;
+  height: 25px;
+
+}
+
+#con{
+  margin:0;
+  height: 100%;
+  width: 100%;
+  padding: 0;
+}
+#event{
+  margin:0;
+  height: 100%;
+  width: 100%;
+}
+#map{
+  height: 100%;
+  width: 100%;
+  margin: 0;
+}
