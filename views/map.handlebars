@@ -23,15 +23,17 @@
 
     var map;
 
-    var markers = [];
-    var infoWindows = [];
+    var events = [];
 
     var geocoder;
+
+    var databaseRef = firebase.database().ref();
+    var eventsRef = firebase.database().ref("event");
 
     function initMap() {
         map = new google.maps.Map(document.getElementById('map'), {
             center: {lat: 43.653299, lng: -79.383011},
-            zoom: 8,
+            zoom: 10,
             streetViewControl: false,
             mapTypeControl: false
 
@@ -57,53 +59,64 @@
         eventData.lat = document.getElementById("lat").value;
         eventData.long = document.getElementById("long").value;
 
-        var databaseRef = firebase.database().ref();
-
         databaseRef.child("event/" + eventData.eventName + "/lat").set(eventData.lat);
         databaseRef.child("event/" + eventData.eventName + "/long").set(eventData.long);
     }
 
     // Deletes all markers in the array by removing references to them.
     function deleteMarkers() {
-        for (var i = 0; i < markers.length; i++) {
-            markers[i].setMap(null);
+        for (var i = 0; i < events.length; i++) {
+            events[i].marker.setMap(null);
         }
-        markers = [];
-        infoWindows = [];
+        events = []
     }
 
-    var eventsRef = firebase.database().ref("event");
+
+    function deleteEvent(index) {
+        events[index].marker.setMap(null);
+        eventsRef.child(events[index].eventName).remove();
+        events.splice(index, 1);
+    }
+
+
 
     eventsRef.on("value", function(snapshot) {
         deleteMarkers();
+        var index = 0;
         snapshot.forEach(function(childSnapShot){
 
             var details = childSnapShot.val();
+
             var eventName = childSnapShot.key;
             var latlng = {lat: parseFloat(details.lat), lng: parseFloat(details.long)};
             var info = details.info;
-            var marker = new google.maps.Marker({position: latlng, map: map, title:eventName});
-
             var address = details.addr;
 
-            console.log(address);
+            var marker = new google.maps.Marker({position: latlng, map: map, title:eventName});
 
             var infoWindow = new google.maps.InfoWindow({
                 content: '<div id="content">'+
-                    '<div id="siteNotice">'+
-                    '</div>'+
                     '<h1 id="firstHeading">'+eventName+'</h1>'+
                     '<h4>'+ address +'</h4>' +
                     '<div id="bodyContent">'+
                     '<p>'+ info +'</p>'+
+                    '<button type="button" id="deleteButton" onclick="deleteEvent('+index+')">Delete</button>' +
                     '</div>'+
                     '</div>'
             });
             marker.addListener("click", function() {
                 infoWindow.open(map, marker);
             });
-            markers.push(marker);
-            infoWindows.push(infoWindow);
+
+            events.push({
+                eventName: eventName,
+                latlng: latlng,
+                info: info,
+                address: address,
+                marker: marker,
+                infoWindow: infoWindow
+            });
+            index++;
         });
     }, function (errorObject) {
         console.log("The read failed: " + errorObject.code);
