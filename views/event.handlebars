@@ -1,22 +1,9 @@
-<script src="https://www.gstatic.com/firebasejs/5.4.0/firebase.js"></script>
-<script type="text/javascript" src="http://maps.google.com/maps/api/js?key=AIzaSyBsYQueSaRPnG3Rm1PjJHMmgCgXwZs9l8E&sensor=false"></script>
+<script type="text/javascript" src="https://maps.google.com/maps/api/js?key=AIzaSyBsYQueSaRPnG3Rm1PjJHMmgCgXwZs9l8E&sensor=false"></script>
 <script>
-
-    var config = {
-        apiKey: "AIzaSyAv7p_lWo3_QnJPayaos3oiPjAQGeNJlk8",
-        authDomain: "lyrical-line-213904.firebaseapp.com",
-        databaseURL: "https://lyrical-line-213904.firebaseio.com",
-        projectId: "lyrical-line-213904",
-        storageBucket: "lyrical-line-213904.appspot.com",
-        messagingSenderId: "779033580712"
-    };
-
-    firebase.initializeApp(config);
     var geocoder = new google.maps.Geocoder();
+    var eventsRef = firebase.database().ref("event");
 
   function uploadEvent(){
-    console.log("HEY BOTS");
-    var databaseRef = firebase.database().ref();
     var name = document.getElementById("eName").value;
     var address = document.getElementById("add").value;
     var info = document.getElementById("info").value;
@@ -26,14 +13,14 @@
     if (status == google.maps.GeocoderStatus.OK) {
       var latitude = results[0].geometry.location.lat();
       var longitude = results[0].geometry.location.lng();
-      databaseRef.child("event/" + name + "/lat").set(latitude);
-      databaseRef.child("event/" + name + "/long").set(longitude);
-      databaseRef.child("event/" + name + "/info").set(info);
+      eventsRef.child(name + "/lat").set(latitude);
+      eventsRef.child(name + "/long").set(longitude);
+      eventsRef.child(name + "/info").set(info);
 
       geocoder.geocode({'location': {lat:parseFloat(latitude), lng:parseFloat(longitude)}}, function(results, status) {
                 if (status === 'OK') {
                     if (results[0]) {
-                        databaseRef.child("event/" + name + "/addr").set(results[0].formatted_address);
+                        eventsRef.child(name + "/addr").set(results[0].formatted_address);
                     } else {
                         window.alert('No results found');
                     }

@@ -1,18 +1,6 @@
-
 <div id="map"></div>
 
-<script src="https://www.gstatic.com/firebasejs/5.4.0/firebase.js"></script>
 <script>
-    // Initialize Firebase
-    var config = {
-        apiKey: "AIzaSyAv7p_lWo3_QnJPayaos3oiPjAQGeNJlk8",
-        authDomain: "lyrical-line-213904.firebaseapp.com",
-        databaseURL: "https://lyrical-line-213904.firebaseio.com",
-        projectId: "lyrical-line-213904",
-        storageBucket: "lyrical-line-213904.appspot.com",
-        messagingSenderId: "779033580712"
-    };
-    firebase.initializeApp(config);
 
     var eventData = {
         sender: null,
@@ -23,11 +11,11 @@
 
     var map;
 
-    var events = [];
+    var eventsList = [];
+    var peopleDict = {};
 
     var geocoder;
 
-    var databaseRef = firebase.database().ref();
     var eventsRef = firebase.database().ref("event");
 
     function initMap() {
@@ -54,34 +42,24 @@
         geocoder = new google.maps.Geocoder;
     }
 
-    function uploadEvent() {
-        eventData.eventName = document.getElementById("eName").value;
-        eventData.lat = document.getElementById("lat").value;
-        eventData.long = document.getElementById("long").value;
-
-        databaseRef.child("event/" + eventData.eventName + "/lat").set(eventData.lat);
-        databaseRef.child("event/" + eventData.eventName + "/long").set(eventData.long);
-    }
-
     // Deletes all markers in the array by removing references to them.
-    function deleteMarkers() {
-        for (var i = 0; i < events.length; i++) {
-            events[i].marker.setMap(null);
+    function deleteEventMarkers() {
+        for (var i = 0; i < eventsList.length; i++) {
+            eventsList[i].marker.setMap(null);
         }
-        events = []
+        eventsList = [];
     }
 
 
     function deleteEvent(index) {
-        events[index].marker.setMap(null);
-        eventsRef.child(events[index].eventName).remove();
-        events.splice(index, 1);
+        eventsList[index].marker.setMap(null);
+        eventsRef.child(eventsList[index].eventName).remove();
+        eventsList.splice(index, 1);
     }
 
 
-
     eventsRef.on("value", function(snapshot) {
-        deleteMarkers();
+        deleteEventMarkers();
         var index = 0;
         snapshot.forEach(function(childSnapShot){
 
@@ -108,7 +86,7 @@
                 infoWindow.open(map, marker);
             });
 
-            events.push({
+            eventsList.push({
                 eventName: eventName,
                 latlng: latlng,
                 info: info,
@@ -122,6 +100,39 @@
         console.log("The read failed: " + errorObject.code);
     });
 
+    peopleRef.on("child_added", function(snapshot, prevChildKey){
+        var name = snapshot.key;
+        var details = snapshot.val();
+        var latlng = {lat: details.lat, lng: details.long};
+
+        var marker = new google.maps.Marker({position: latlng, map: map, title: name});
+        var infoWindow = new google.maps.InfoWindow({
+            content: '<h1 id="firstHeading">' + name + '</h1>'
+        });
+        marker.addListener("click", function(){
+            infoWindow.open(map, marker);
+        });
+
+        peopleDict[name] = {
+            latlng: latlng,
+            marker: marker,
+            infoWindow: infoWindow
+        };
+    });
+
+    peopleRef.on("child_changed", function(snapshot){
+        var name = snapshot.key;
+        var details = snapshot.val();
+        var latlng = {lat: details.lat, lng: details.long};
+
+        peopleDict[name].marker.setPosition(latlng);
+    });
+
+    peopleRef.on("child_removed", function(snapshot){
+        var name = snapshot.key;
+        peopleDict[name].marker.setMap(null);
+        delete peopleDict[name];
+    });
 
 </script>
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBsYQueSaRPnG3Rm1PjJHMmgCgXwZs9l8E&callback=initMap"
